@@ -8,12 +8,66 @@ type LeadRecord = LeadFormValues & {
   ipHashKey: string;
 };
 
+type EmailConfig = {
+  host: string;
+  port: number;
+  user: string;
+  pass: string;
+  from: string;
+  to: string;
+};
+
 function requiredEnv(name: string) {
   const value = process.env[name];
   if (!value) {
     throw new Error(`${name} is not configured`);
   }
   return value;
+}
+
+function parseBundledConfig(value: string): Partial<Record<keyof EmailConfig, string>> {
+  return value.split(";").reduce<Partial<Record<keyof EmailConfig, string>>>((config, part) => {
+    const separatorIndex = part.indexOf("=");
+
+    if (separatorIndex === -1) {
+      return config;
+    }
+
+    const key = part.slice(0, separatorIndex).trim() as keyof EmailConfig;
+    const fieldValue = part.slice(separatorIndex + 1).trim();
+
+    if (key && fieldValue) {
+      config[key] = fieldValue;
+    }
+
+    return config;
+  }, {});
+}
+
+function getEmailConfig(): EmailConfig {
+  const bundledConfig = process.env.LEAD_EMAIL_CONFIG
+    ? parseBundledConfig(process.env.LEAD_EMAIL_CONFIG)
+    : {};
+
+  const user = bundledConfig.user || requiredEnv("SMTP_USER");
+
+  return {
+    host: bundledConfig.host || requiredEnv("SMTP_HOST"),
+    port: Number(bundledConfig.port || process.env.SMTP_PORT || 465),
+    user,
+    pass: bundledConfig.pass || requiredEnv("SMTP_PASS"),
+    from: bundledConfig.from || process.env.SMTP_FROM || user,
+    to: bundledConfig.to || process.env.LEAD_NOTIFICATION_EMAIL || user,
+  };
+}
+
+export function hasLeadEmailConfig() {
+  if (process.env.LEAD_EMAIL_CONFIG) {
+    const bundledConfig = parseBundledConfig(process.env.LEAD_EMAIL_CONFIG);
+    return Boolean(bundledConfig.host && bundledConfig.user && bundledConfig.pass);
+  }
+
+  return Boolean(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS);
 }
 
 function escapeHtml(value: unknown) {
@@ -51,12 +105,7 @@ function leadRows(lead: LeadRecord) {
 }
 
 export async function sendLeadEmail(lead: LeadRecord) {
-  const host = requiredEnv("SMTP_HOST");
-  const port = Number(process.env.SMTP_PORT || 465);
-  const user = requiredEnv("SMTP_USER");
-  const pass = requiredEnv("SMTP_PASS");
-  const from = process.env.SMTP_FROM || user;
-  const to = process.env.LEAD_NOTIFICATION_EMAIL || user;
+  const { host, port, user, pass, from, to } = getEmailConfig();
 
   const transporter = nodemailer.createTransport({
     host,

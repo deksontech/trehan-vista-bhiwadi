@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { sendLeadEmail } from "@/lib/lead-email";
+import { hasLeadEmailConfig, sendLeadEmail } from "@/lib/lead-email";
 import { leadSchema } from "@/lib/validation";
 
 export const runtime = "nodejs";
@@ -7,7 +7,6 @@ export const runtime = "nodejs";
 const RATE_WINDOW_MS = 60_000;
 const MAX_REQUESTS = 5;
 const requests = new Map<string, { count: number; resetAt: number }>();
-const smtpRequiredKeys = ["SMTP_HOST", "SMTP_USER", "SMTP_PASS"] as const;
 
 function getClientKey(request: NextRequest) {
   return (
@@ -81,12 +80,10 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  const missingSmtpKeys = smtpRequiredKeys.filter((keyName) => !process.env[keyName]);
+  const isEmailConfigured = hasLeadEmailConfig();
 
-  if (process.env.NODE_ENV === "production" && missingSmtpKeys.length > 0) {
-    console.error("Lead email is not configured", {
-      missing: missingSmtpKeys,
-    });
+  if (process.env.NODE_ENV === "production" && !isEmailConfigured) {
+    console.error("Lead email is not configured");
 
     return NextResponse.json(
       {
@@ -98,7 +95,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  if (missingSmtpKeys.length === 0) {
+  if (isEmailConfigured) {
     try {
       await sendLeadEmail(lead);
     } catch (error) {
