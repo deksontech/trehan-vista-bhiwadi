@@ -14,6 +14,7 @@ import {
   Landmark,
   Leaf,
   MapPin,
+  MessageCircle,
   ShieldCheck,
   Sofa,
   Sparkles,
@@ -36,6 +37,7 @@ import { SectionHeading } from "@/components/ui/SectionHeading";
 import { faqs } from "@/data/faqs";
 import { project } from "@/data/project";
 import { trackEvent } from "@/lib/analytics";
+import { whatsappUrl } from "@/lib/utils";
 import type { LeadFormValues } from "@/lib/validation";
 
 type ModalState = {
@@ -66,7 +68,7 @@ export default function LandingPage() {
 
   return (
     <main id="top" className="bg-[#FFFDF8] pb-20 text-[#161512] md:pb-0">
-      <AnnouncementBar onPrice={() => openLead("Latest Price List", "Announcement Price List")} />
+      <AnnouncementBar />
       <Header onSiteVisit={() => openLead("Site Visit", "Header Site Visit")} />
       <HeroSection openLead={openLead} />
       <TrustStrip />
@@ -147,6 +149,14 @@ function HeroSection({ openLead }: { openLead: LandingCta }) {
             >
               Get Latest Price List
             </PremiumButton>
+            <a
+              href={whatsappUrl(project.contact.whatsapp, project.whatsappMessage)}
+              onClick={() => trackEvent("whatsapp_clicked", { placement: "hero" })}
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-[#35684C] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#2f5d44] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#D7C29A]"
+            >
+              <MessageCircle size={17} aria-hidden="true" />
+              WhatsApp Now
+            </a>
           </div>
           <p className="mt-4 text-xs text-white/60">Prices and availability are subject to confirmation.</p>
         </motion.div>
