@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { hasLeadEmailConfig, sendLeadEmail } from "@/lib/lead-email";
 import { leadSchema } from "@/lib/validation";
 
 export const runtime = "nodejs";
 
+const FORMSUBMIT_ENDPOINT = "https://formsubmit.co/ajax/info@trehanvistabhiwadi.com";
 const RATE_WINDOW_MS = 60_000;
 const MAX_REQUESTS = 5;
 const requests = new Map<string, { count: number; resetAt: number }>();
@@ -80,35 +80,67 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  const isEmailConfigured = hasLeadEmailConfig();
-
-  if (process.env.NODE_ENV === "production" && !isEmailConfigured) {
-    console.error("Lead email is not configured");
-
-    return NextResponse.json(
-      {
-        ok: false,
-        message:
-          "Lead email notification is not configured. Please call or WhatsApp the sales team.",
+  try {
+    const response = await fetch(FORMSUBMIT_ENDPOINT, {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
       },
-      { status: 503 },
-    );
-  }
+      body: JSON.stringify({
+        _subject: `New Trehan Vista Lead - ${lead.enquiryType}`,
+        _template: "table",
+        _captcha: "false",
+        name: lead.fullName,
+        phone: lead.phone,
+        email: lead.email || "Not provided",
+        apartment_preference: lead.apartmentPreference,
+        budget_range: lead.budgetRange || "Not selected",
+        enquiry_type: lead.enquiryType,
+        preferred_visit_date: lead.preferredVisitDate || "Not selected",
+        message: lead.message || "Not provided",
+        consent: lead.consent ? "Yes" : "No",
+        cta_clicked: lead.ctaClicked || "Not captured",
+        enquiry_source: lead.enquirySource || "Not captured",
+        page_url: lead.pageUrl || "Not captured",
+        referrer: lead.referrer || "Not captured",
+        utm_source: lead.utm_source || "Not captured",
+        utm_medium: lead.utm_medium || "Not captured",
+        utm_campaign: lead.utm_campaign || "Not captured",
+        utm_content: lead.utm_content || "Not captured",
+        utm_term: lead.utm_term || "Not captured",
+        submitted_at: lead.submittedAt,
+      }),
+    });
 
-  if (isEmailConfigured) {
-    try {
-      await sendLeadEmail(lead);
-    } catch (error) {
-      console.error("Lead email failed", error);
+    const result = (await response.json().catch(() => ({}))) as {
+      success?: string;
+      message?: string;
+    };
+
+    if (!response.ok || result.success === "false") {
+      console.error("FormSubmit lead email failed", result);
+
       return NextResponse.json(
         {
           ok: false,
           message:
+            result.message ||
             "Your details were received, but email notification failed. Please call or WhatsApp the sales team.",
         },
         { status: 502 },
       );
     }
+  } catch (error) {
+    console.error("FormSubmit lead email failed", error);
+    return NextResponse.json(
+      {
+        ok: false,
+        message:
+          "Your details were received, but email notification failed. Please call or WhatsApp the sales team.",
+      },
+      { status: 502 },
+    );
   }
 
   return NextResponse.json({
