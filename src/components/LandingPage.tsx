@@ -347,7 +347,7 @@ function FurnishingSection({ openLead }: { openLead: LandingCta }) {
         <div className="relative aspect-[4/3] overflow-hidden rounded-lg border border-[#DED7CB]">
           <img
             src="/images/trehan-vista/furnished-flat.webp"
-            alt="Representative furnished flat visual for Trehan Vista"
+            alt="Trehan Vista furnished flat bedroom"
             className="h-full w-full object-cover"
           />
         </div>
@@ -410,10 +410,30 @@ function GallerySection() {
       <Container>
         <SectionHeading
           title="Lifestyle Gallery"
-          copy="A mix of supplied project visuals and local representative placeholders for images that still need verified project photography."
+          copy="Supplied project photos and videos showing the entrance, landscaped greens, furnished interiors and community spaces."
         />
         <div className="mt-10">
           <ImageLightbox />
+        </div>
+        <div className="mt-8 grid gap-5 lg:grid-cols-2">
+          {project.videos.map((video) => (
+            <figure
+              key={video.src}
+              className="overflow-hidden rounded-lg border border-[#DED7CB] bg-[#FFFDF8] shadow-sm"
+            >
+              <video
+                className="aspect-video w-full bg-[#161512] object-cover"
+                controls
+                preload="metadata"
+                playsInline
+              >
+                <source src={video.src} type="video/mp4" />
+              </video>
+              <figcaption className="px-4 py-3 text-sm font-semibold text-[#2B241E]">
+                {video.label}
+              </figcaption>
+            </figure>
+          ))}
         </div>
       </Container>
     </section>

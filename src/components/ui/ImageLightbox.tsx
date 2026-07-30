@@ -35,11 +35,6 @@ export function ImageLightbox() {
             />
             <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-4 text-sm font-semibold text-white">
               {item.label}
-              {!item.actual ? (
-                <span className="block text-xs font-normal text-white/75">
-                  Representative visual
-                </span>
-              ) : null}
             </span>
           </button>
         ))}
