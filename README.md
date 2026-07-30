@@ -28,12 +28,10 @@ Do not add outdated prices, floor-wise prices, unverified RERA numbers, possessi
 
 ## Lead Email Notifications
 
-Lead submissions are sent directly from the client to FormSubmit's AJAX endpoint.
-The server API route also forwards to FormSubmit for compatibility with older deployed
+Lead submissions are sent directly from the client to Web3Forms.
+The server API route also forwards to Web3Forms for compatibility with older deployed
 client bundles.
 
-The first production submission to `info@trehanvistabhiwadi.com` will trigger a FormSubmit
-activation email. Open that email and confirm the address before expecting regular lead delivery.
 No Hostinger SMTP environment variables are required.
 
 ## Assets
