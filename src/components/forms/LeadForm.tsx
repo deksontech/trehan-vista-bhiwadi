@@ -17,9 +17,6 @@ import {
 } from "@/lib/validation";
 import { cn } from "@/lib/utils";
 
-const WEB3FORMS_ENDPOINT = "https://api.web3forms.com/submit";
-const WEB3FORMS_ACCESS_KEY = "25c24e80-ef96-42c2-a5b2-b47bc86ce783";
-
 type LeadFormProps = {
   compact?: boolean;
   defaultApartment?: LeadFormValues["apartmentPreference"];
@@ -99,43 +96,20 @@ export function LeadForm({
       ctaClicked,
     };
 
-    const response = await fetch(WEB3FORMS_ENDPOINT, {
+    const response = await fetch("/api/leads", {
       method: "POST",
       headers: {
-        Accept: "application/json",
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        access_key: WEB3FORMS_ACCESS_KEY,
-        subject: `New Trehan Vista Lead - ${payload.enquiryType}`,
-        from_name: "Trehan Vista Landing Page",
-        name: payload.fullName,
-        phone: payload.phone,
-        email: payload.email || "Not provided",
-        apartment_preference: payload.apartmentPreference,
-        budget_range: payload.budgetRange || "Not selected",
-        enquiry_type: payload.enquiryType,
-        preferred_visit_date: payload.preferredVisitDate || "Not selected",
-        message: payload.message || "Not provided",
-        consent: payload.consent ? "Yes" : "No",
-        cta_clicked: payload.ctaClicked || "Not captured",
-        enquiry_source: payload.enquirySource || "Not captured",
-        page_url: payload.pageUrl || "Not captured",
-        referrer: payload.referrer || "Not captured",
-        utm_source: payload.utm_source || "Not captured",
-        utm_medium: payload.utm_medium || "Not captured",
-        utm_campaign: payload.utm_campaign || "Not captured",
-        utm_content: payload.utm_content || "Not captured",
-        utm_term: payload.utm_term || "Not captured",
-      }),
+      body: JSON.stringify(payload),
     });
 
     const result = (await response.json().catch(() => ({}))) as {
-      success?: boolean;
+      ok?: boolean;
       message?: string;
     };
 
-    if (!response.ok || !result.success) {
+    if (!response.ok || !result.ok) {
       submittedKey.current = "";
       setServerError(
         result.message ??

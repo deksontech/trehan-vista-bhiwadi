@@ -9,12 +9,66 @@ const RATE_WINDOW_MS = 60_000;
 const MAX_REQUESTS = 5;
 const requests = new Map<string, { count: number; resetAt: number }>();
 
+type Web3FormsPayload = Record<string, string>;
+
 function getClientKey(request: NextRequest) {
   return (
     request.headers.get("cf-connecting-ip") ||
     request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
     "local"
   );
+}
+
+function buildWeb3FormsPayload(lead: {
+  fullName: string;
+  phone: string;
+  email?: string;
+  apartmentPreference: string;
+  budgetRange?: string;
+  enquiryType: string;
+  preferredVisitDate?: string;
+  message?: string;
+  consent: boolean;
+  ctaClicked?: string;
+  enquirySource?: string;
+  pageUrl?: string;
+  referrer?: string;
+  utm_source?: string;
+  utm_medium?: string;
+  utm_campaign?: string;
+  utm_content?: string;
+  utm_term?: string;
+  submittedAt: string;
+}) {
+  const payload: Web3FormsPayload = {
+    access_key: WEB3FORMS_ACCESS_KEY,
+    subject: `New Trehan Vista Lead - ${lead.enquiryType}`,
+    from_name: "Trehan Vista Landing Page",
+    name: lead.fullName,
+    phone: lead.phone,
+    apartment_preference: lead.apartmentPreference,
+    budget_range: lead.budgetRange || "Not selected",
+    enquiry_type: lead.enquiryType,
+    preferred_visit_date: lead.preferredVisitDate || "Not selected",
+    message: lead.message || "Not provided",
+    consent: lead.consent ? "Yes" : "No",
+    cta_clicked: lead.ctaClicked || "Not captured",
+    enquiry_source: lead.enquirySource || "Not captured",
+    page_url: lead.pageUrl || "Not captured",
+    referrer: lead.referrer || "Not captured",
+    utm_source: lead.utm_source || "Not captured",
+    utm_medium: lead.utm_medium || "Not captured",
+    utm_campaign: lead.utm_campaign || "Not captured",
+    utm_content: lead.utm_content || "Not captured",
+    utm_term: lead.utm_term || "Not captured",
+    submitted_at: lead.submittedAt,
+  };
+
+  if (lead.email) {
+    payload.email = lead.email;
+  }
+
+  return payload;
 }
 
 export async function POST(request: NextRequest) {
@@ -88,30 +142,7 @@ export async function POST(request: NextRequest) {
         Accept: "application/json",
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        access_key: WEB3FORMS_ACCESS_KEY,
-        subject: `New Trehan Vista Lead - ${lead.enquiryType}`,
-        from_name: "Trehan Vista Landing Page",
-        name: lead.fullName,
-        phone: lead.phone,
-        email: lead.email || "Not provided",
-        apartment_preference: lead.apartmentPreference,
-        budget_range: lead.budgetRange || "Not selected",
-        enquiry_type: lead.enquiryType,
-        preferred_visit_date: lead.preferredVisitDate || "Not selected",
-        message: lead.message || "Not provided",
-        consent: lead.consent ? "Yes" : "No",
-        cta_clicked: lead.ctaClicked || "Not captured",
-        enquiry_source: lead.enquirySource || "Not captured",
-        page_url: lead.pageUrl || "Not captured",
-        referrer: lead.referrer || "Not captured",
-        utm_source: lead.utm_source || "Not captured",
-        utm_medium: lead.utm_medium || "Not captured",
-        utm_campaign: lead.utm_campaign || "Not captured",
-        utm_content: lead.utm_content || "Not captured",
-        utm_term: lead.utm_term || "Not captured",
-        submitted_at: lead.submittedAt,
-      }),
+      body: JSON.stringify(buildWeb3FormsPayload(lead)),
     });
 
     const result = (await response.json().catch(() => ({}))) as {
