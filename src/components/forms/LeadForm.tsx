@@ -17,6 +17,21 @@ import {
 } from "@/lib/validation";
 import { cn } from "@/lib/utils";
 
+const WEB3FORMS_ENDPOINT = "https://api.web3forms.com/submit";
+const WEB3FORMS_ACCESS_KEY = "25c24e80-ef96-42c2-a5b2-b47bc86ce783";
+
+type LeadSubmissionPayload = LeadFormValues & {
+  enquirySource: string;
+  ctaClicked: string;
+  pageUrl?: string;
+  referrer?: string;
+  utm_source?: string;
+  utm_medium?: string;
+  utm_campaign?: string;
+  utm_content?: string;
+  utm_term?: string;
+};
+
 type LeadFormProps = {
   compact?: boolean;
   defaultApartment?: LeadFormValues["apartmentPreference"];
@@ -81,6 +96,37 @@ export function LeadForm({
     });
   }
 
+  function buildWeb3FormsPayload(payload: LeadSubmissionPayload) {
+    const web3Payload: Record<string, string> = {
+      access_key: WEB3FORMS_ACCESS_KEY,
+      subject: `New Trehan Vista Lead - ${payload.enquiryType}`,
+      from_name: "Trehan Vista Landing Page",
+      name: payload.fullName,
+      phone: payload.phone,
+      apartment_preference: payload.apartmentPreference,
+      budget_range: payload.budgetRange || "Not selected",
+      enquiry_type: payload.enquiryType,
+      preferred_visit_date: payload.preferredVisitDate || "Not selected",
+      message: payload.message || "Not provided",
+      consent: payload.consent ? "Yes" : "No",
+      cta_clicked: payload.ctaClicked,
+      enquiry_source: payload.enquirySource,
+      page_url: payload.pageUrl || "Not captured",
+      referrer: payload.referrer || "Not captured",
+      utm_source: payload.utm_source || "Not captured",
+      utm_medium: payload.utm_medium || "Not captured",
+      utm_campaign: payload.utm_campaign || "Not captured",
+      utm_content: payload.utm_content || "Not captured",
+      utm_term: payload.utm_term || "Not captured",
+    };
+
+    if (payload.email) {
+      web3Payload.email = payload.email;
+    }
+
+    return web3Payload;
+  }
+
   async function onSubmit(values: LeadFormValues) {
     setServerError("");
     const signature = `${values.phone}-${values.enquiryType}-${values.apartmentPreference}`;
@@ -96,20 +142,21 @@ export function LeadForm({
       ctaClicked,
     };
 
-    const response = await fetch("/api/leads", {
+    const response = await fetch(WEB3FORMS_ENDPOINT, {
       method: "POST",
       headers: {
+        Accept: "application/json",
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(payload),
+      body: JSON.stringify(buildWeb3FormsPayload(payload)),
     });
 
     const result = (await response.json().catch(() => ({}))) as {
-      ok?: boolean;
+      success?: boolean;
       message?: string;
     };
 
-    if (!response.ok || !result.ok) {
+    if (!response.ok || !result.success) {
       submittedKey.current = "";
       setServerError(
         result.message ??
