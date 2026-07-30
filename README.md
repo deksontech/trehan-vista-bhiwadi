@@ -26,6 +26,21 @@ Project facts, pricing, contact details, configurations, amenities, furnishing i
 
 Do not add outdated prices, floor-wise prices, unverified RERA numbers, possession dates, travel times, distances, guarantees, bank partnerships or final all-inclusive pricing unless verified by the project owner.
 
+## Lead Email Notifications
+
+Lead submissions are sent through the server-side API route at `src/app/api/leads/route.ts`.
+
+Configure these environment variables in Hostinger, without exposing them in frontend code:
+
+```env
+LEAD_NOTIFICATION_EMAIL=info@trehanvistabhiwadi.com
+SMTP_HOST=smtp.hostinger.com
+SMTP_PORT=465
+SMTP_USER=info@trehanvistabhiwadi.com
+SMTP_PASS=
+SMTP_FROM=info@trehanvistabhiwadi.com
+```
+
 ## Assets
 
 Local images live in `public/images/trehan-vista/`. See `README-ASSETS.md` for every required image and replacement status.

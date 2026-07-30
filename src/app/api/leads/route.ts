@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
+import { sendLeadEmail } from "@/lib/lead-email";
 import { leadSchema } from "@/lib/validation";
+
+export const runtime = "nodejs";
 
 const RATE_WINDOW_MS = 60_000;
 const MAX_REQUESTS = 5;
@@ -74,6 +77,22 @@ export async function POST(request: NextRequest) {
       });
     } catch (error) {
       console.error("Lead webhook failed", error);
+    }
+  }
+
+  if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
+    try {
+      await sendLeadEmail(lead);
+    } catch (error) {
+      console.error("Lead email failed", error);
+      return NextResponse.json(
+        {
+          ok: false,
+          message:
+            "Your details were received, but email notification failed. Please call or WhatsApp the sales team.",
+        },
+        { status: 502 },
+      );
     }
   }
 
