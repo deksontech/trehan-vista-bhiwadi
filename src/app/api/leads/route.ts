@@ -7,6 +7,7 @@ export const runtime = "nodejs";
 const RATE_WINDOW_MS = 60_000;
 const MAX_REQUESTS = 5;
 const requests = new Map<string, { count: number; resetAt: number }>();
+const smtpRequiredKeys = ["SMTP_HOST", "SMTP_USER", "SMTP_PASS"] as const;
 
 function getClientKey(request: NextRequest) {
   return (
@@ -80,7 +81,24 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
+  const missingSmtpKeys = smtpRequiredKeys.filter((keyName) => !process.env[keyName]);
+
+  if (process.env.NODE_ENV === "production" && missingSmtpKeys.length > 0) {
+    console.error("Lead email is not configured", {
+      missing: missingSmtpKeys,
+    });
+
+    return NextResponse.json(
+      {
+        ok: false,
+        message:
+          "Lead email notification is not configured. Please call or WhatsApp the sales team.",
+      },
+      { status: 503 },
+    );
+  }
+
+  if (missingSmtpKeys.length === 0) {
     try {
       await sendLeadEmail(lead);
     } catch (error) {
