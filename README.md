@@ -28,13 +28,10 @@ Do not add outdated prices, floor-wise prices, unverified RERA numbers, possessi
 
 ## Lead Email Notifications
 
-Lead submissions are sent through the server-side API route at `src/app/api/leads/route.ts`.
+Lead submissions are sent directly from the client to FormSubmit's AJAX endpoint.
 
-Configure these environment variables in Hostinger, without exposing them in frontend code:
-
-```env
-LEAD_EMAIL_CONFIG=host=smtp.hostinger.com;port=465;user=info@example.com;pass=password;from=info@example.com;to=info@example.com
-```
+The first production submission to `info@trehanvistabhiwadi.com` will trigger a FormSubmit
+activation email. Open that email and confirm the address before expecting regular lead delivery.
 
 ## Assets
 
