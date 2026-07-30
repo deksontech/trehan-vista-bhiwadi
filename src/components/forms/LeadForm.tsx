@@ -17,7 +17,8 @@ import {
 } from "@/lib/validation";
 import { cn } from "@/lib/utils";
 
-const FORMSUBMIT_ENDPOINT = "https://formsubmit.co/ajax/info@trehanvistabhiwadi.com";
+const FORMSUBMIT_ENDPOINT = "https://formsubmit.co/info@trehanvistabhiwadi.com";
+const FORMSUBMIT_TARGET = "formsubmit-hidden-frame";
 
 type LeadFormProps = {
   compact?: boolean;
@@ -83,6 +84,26 @@ export function LeadForm({
     });
   }
 
+  function postToFormSubmit(fields: Record<string, string>) {
+    const form = document.createElement("form");
+    form.action = FORMSUBMIT_ENDPOINT;
+    form.method = "POST";
+    form.target = FORMSUBMIT_TARGET;
+    form.style.display = "none";
+
+    Object.entries(fields).forEach(([name, value]) => {
+      const input = document.createElement("input");
+      input.type = "hidden";
+      input.name = name;
+      input.value = value;
+      form.appendChild(input);
+    });
+
+    document.body.appendChild(form);
+    form.submit();
+    window.setTimeout(() => form.remove(), 1000);
+  }
+
   async function onSubmit(values: LeadFormValues) {
     setServerError("");
     const signature = `${values.phone}-${values.enquiryType}-${values.apartmentPreference}`;
@@ -98,50 +119,29 @@ export function LeadForm({
       ctaClicked,
     };
 
-    const response = await fetch(FORMSUBMIT_ENDPOINT, {
-      method: "POST",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        _subject: `New Trehan Vista Lead - ${payload.enquiryType}`,
-        _template: "table",
-        _captcha: "false",
-        name: payload.fullName,
-        phone: payload.phone,
-        email: payload.email || "Not provided",
-        apartment_preference: payload.apartmentPreference,
-        budget_range: payload.budgetRange || "Not selected",
-        enquiry_type: payload.enquiryType,
-        preferred_visit_date: payload.preferredVisitDate || "Not selected",
-        message: payload.message || "Not provided",
-        consent: payload.consent ? "Yes" : "No",
-        cta_clicked: payload.ctaClicked || "Not captured",
-        enquiry_source: payload.enquirySource || "Not captured",
-        page_url: payload.pageUrl || "Not captured",
-        referrer: payload.referrer || "Not captured",
-        utm_source: payload.utm_source || "Not captured",
-        utm_medium: payload.utm_medium || "Not captured",
-        utm_campaign: payload.utm_campaign || "Not captured",
-        utm_content: payload.utm_content || "Not captured",
-        utm_term: payload.utm_term || "Not captured",
-      }),
+    postToFormSubmit({
+      _subject: `New Trehan Vista Lead - ${payload.enquiryType}`,
+      _template: "table",
+      _captcha: "false",
+      name: payload.fullName,
+      phone: payload.phone,
+      email: payload.email || "Not provided",
+      apartment_preference: payload.apartmentPreference,
+      budget_range: payload.budgetRange || "Not selected",
+      enquiry_type: payload.enquiryType,
+      preferred_visit_date: payload.preferredVisitDate || "Not selected",
+      message: payload.message || "Not provided",
+      consent: payload.consent ? "Yes" : "No",
+      cta_clicked: payload.ctaClicked || "Not captured",
+      enquiry_source: payload.enquirySource || "Not captured",
+      page_url: payload.pageUrl || "Not captured",
+      referrer: payload.referrer || "Not captured",
+      utm_source: payload.utm_source || "Not captured",
+      utm_medium: payload.utm_medium || "Not captured",
+      utm_campaign: payload.utm_campaign || "Not captured",
+      utm_content: payload.utm_content || "Not captured",
+      utm_term: payload.utm_term || "Not captured",
     });
-
-    const result = (await response.json().catch(() => ({}))) as {
-      success?: string;
-      message?: string;
-    };
-
-    if (!response.ok || result.success === "false") {
-      submittedKey.current = "";
-      setServerError(
-        result.message ??
-          "Something went wrong while sending your details. Please call or WhatsApp the sales team.",
-      );
-      return;
-    }
 
     trackEvent("lead_form_submitted", {
       enquiry_type: values.enquiryType,
@@ -172,6 +172,7 @@ export function LeadForm({
 
   return (
     <form className="space-y-4" onSubmit={handleSubmit(onSubmit)} onFocus={markStarted}>
+      <iframe className="hidden" name={FORMSUBMIT_TARGET} title="Lead form submission" />
       <input
         {...register("company")}
         className="hidden"

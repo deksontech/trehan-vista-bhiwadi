@@ -81,36 +81,40 @@ export async function POST(request: NextRequest) {
   }
 
   try {
+    const formData = new URLSearchParams({
+      _subject: `New Trehan Vista Lead - ${lead.enquiryType}`,
+      _template: "table",
+      _captcha: "false",
+      name: lead.fullName,
+      phone: lead.phone,
+      email: lead.email || "Not provided",
+      apartment_preference: lead.apartmentPreference,
+      budget_range: lead.budgetRange || "Not selected",
+      enquiry_type: lead.enquiryType,
+      preferred_visit_date: lead.preferredVisitDate || "Not selected",
+      message: lead.message || "Not provided",
+      consent: lead.consent ? "Yes" : "No",
+      cta_clicked: lead.ctaClicked || "Not captured",
+      enquiry_source: lead.enquirySource || "Not captured",
+      page_url: lead.pageUrl || "Not captured",
+      referrer: lead.referrer || "Not captured",
+      utm_source: lead.utm_source || "Not captured",
+      utm_medium: lead.utm_medium || "Not captured",
+      utm_campaign: lead.utm_campaign || "Not captured",
+      utm_content: lead.utm_content || "Not captured",
+      utm_term: lead.utm_term || "Not captured",
+      submitted_at: lead.submittedAt,
+    });
+
     const response = await fetch(FORMSUBMIT_ENDPOINT, {
       method: "POST",
       headers: {
         Accept: "application/json",
-        "Content-Type": "application/json",
+        "Content-Type": "application/x-www-form-urlencoded",
+        Origin: "https://trehanvistabhiwadi.com",
+        Referer: "https://trehanvistabhiwadi.com/",
       },
-      body: JSON.stringify({
-        _subject: `New Trehan Vista Lead - ${lead.enquiryType}`,
-        _template: "table",
-        _captcha: "false",
-        name: lead.fullName,
-        phone: lead.phone,
-        email: lead.email || "Not provided",
-        apartment_preference: lead.apartmentPreference,
-        budget_range: lead.budgetRange || "Not selected",
-        enquiry_type: lead.enquiryType,
-        preferred_visit_date: lead.preferredVisitDate || "Not selected",
-        message: lead.message || "Not provided",
-        consent: lead.consent ? "Yes" : "No",
-        cta_clicked: lead.ctaClicked || "Not captured",
-        enquiry_source: lead.enquirySource || "Not captured",
-        page_url: lead.pageUrl || "Not captured",
-        referrer: lead.referrer || "Not captured",
-        utm_source: lead.utm_source || "Not captured",
-        utm_medium: lead.utm_medium || "Not captured",
-        utm_campaign: lead.utm_campaign || "Not captured",
-        utm_content: lead.utm_content || "Not captured",
-        utm_term: lead.utm_term || "Not captured",
-        submitted_at: lead.submittedAt,
-      }),
+      body: formData,
     });
 
     const result = (await response.json().catch(() => ({}))) as {
