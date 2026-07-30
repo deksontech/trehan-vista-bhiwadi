@@ -33,12 +33,7 @@ Lead submissions are sent through the server-side API route at `src/app/api/lead
 Configure these environment variables in Hostinger, without exposing them in frontend code:
 
 ```env
-LEAD_NOTIFICATION_EMAIL=info@trehanvistabhiwadi.com
-SMTP_HOST=smtp.hostinger.com
-SMTP_PORT=465
-SMTP_USER=info@trehanvistabhiwadi.com
-SMTP_PASS=
-SMTP_FROM=info@trehanvistabhiwadi.com
+LEAD_EMAIL_CONFIG=host=smtp.hostinger.com;port=465;user=info@example.com;pass=password;from=info@example.com;to=info@example.com
 ```
 
 ## Assets
