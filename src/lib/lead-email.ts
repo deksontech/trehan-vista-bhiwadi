@@ -44,10 +44,23 @@ function parseBundledConfig(value: string): Partial<Record<keyof EmailConfig, st
   }, {});
 }
 
+function bundledConfigValue() {
+  if (process.env.LEAD_EMAIL_CONFIG) {
+    return process.env.LEAD_EMAIL_CONFIG;
+  }
+
+  const smtpHost = process.env.SMTP_HOST || "";
+
+  if (smtpHost.includes(";") && smtpHost.includes("=")) {
+    return smtpHost;
+  }
+
+  return "";
+}
+
 function getEmailConfig(): EmailConfig {
-  const bundledConfig = process.env.LEAD_EMAIL_CONFIG
-    ? parseBundledConfig(process.env.LEAD_EMAIL_CONFIG)
-    : {};
+  const bundledConfigRaw = bundledConfigValue();
+  const bundledConfig = bundledConfigRaw ? parseBundledConfig(bundledConfigRaw) : {};
 
   const user = bundledConfig.user || requiredEnv("SMTP_USER");
 
@@ -62,8 +75,10 @@ function getEmailConfig(): EmailConfig {
 }
 
 export function hasLeadEmailConfig() {
-  if (process.env.LEAD_EMAIL_CONFIG) {
-    const bundledConfig = parseBundledConfig(process.env.LEAD_EMAIL_CONFIG);
+  const bundledConfigRaw = bundledConfigValue();
+
+  if (bundledConfigRaw) {
+    const bundledConfig = parseBundledConfig(bundledConfigRaw);
     return Boolean(bundledConfig.host && bundledConfig.user && bundledConfig.pass);
   }
 
