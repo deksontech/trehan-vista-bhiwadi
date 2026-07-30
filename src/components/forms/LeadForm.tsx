@@ -1,7 +1,5 @@
 "use client";
 
-/* eslint-disable react-hooks/refs */
-
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CalendarDays, CheckCircle2, Loader2 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -30,6 +28,8 @@ type LeadSubmissionPayload = LeadFormValues & {
   utm_campaign?: string;
   utm_content?: string;
   utm_term?: string;
+  submittedAt: string;
+  leadId: string;
 };
 
 type LeadFormProps = {
@@ -50,7 +50,6 @@ export function LeadForm({
   const [success, setSuccess] = useState(false);
   const [serverError, setServerError] = useState("");
   const started = useRef(false);
-  const submittedKey = useRef("");
 
   const defaults = useMemo(
     () => ({
@@ -99,8 +98,10 @@ export function LeadForm({
   function buildWeb3FormsPayload(payload: LeadSubmissionPayload) {
     const web3Payload: Record<string, string> = {
       access_key: WEB3FORMS_ACCESS_KEY,
-      subject: `New Trehan Vista Lead - ${payload.enquiryType}`,
+      subject: `New Trehan Vista Lead - ${payload.enquiryType} - ${payload.submittedAt}`,
       from_name: "Trehan Vista Landing Page",
+      lead_id: payload.leadId,
+      submitted_at: payload.submittedAt,
       name: payload.fullName,
       phone: payload.phone,
       apartment_preference: payload.apartmentPreference,
@@ -129,17 +130,16 @@ export function LeadForm({
 
   async function onSubmit(values: LeadFormValues) {
     setServerError("");
-    const signature = `${values.phone}-${values.enquiryType}-${values.apartmentPreference}`;
-    if (submittedKey.current === signature) {
-      return;
-    }
+    const submittedAt = new Date().toISOString();
+    const leadId = crypto.randomUUID();
 
-    submittedKey.current = signature;
     const payload = {
       ...values,
       ...collectLeadSource(),
       enquirySource: source,
       ctaClicked,
+      submittedAt,
+      leadId,
     };
 
     const response = await fetch(WEB3FORMS_ENDPOINT, {
@@ -157,7 +157,6 @@ export function LeadForm({
     };
 
     if (!response.ok || !result.success) {
-      submittedKey.current = "";
       setServerError(
         result.message ??
           "Something went wrong while sending your details. Please call or WhatsApp the sales team.",
