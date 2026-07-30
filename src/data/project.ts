@@ -13,6 +13,8 @@ export const project = {
       "Trehan Vista, Sector 54, SH-25, Alwar-Bhiwadi Highway, near Euro International School, Bhiwadi, Rajasthan 301019",
     googleMapsUrl:
       "https://www.google.com/maps/search/?api=1&query=Trehan%20Vista%20Sector%2054%20Bhiwadi%20Rajasthan",
+    googleMapsEmbedUrl:
+      "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3518.105932297894!2d76.80905659999999!3d28.1432632!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390d496cf0331b63%3A0xfe2340d3db1122b1!2sTrehan%20Vista!5e0!3m2!1sen!2sin!4v1785410313629!5m2!1sen!2sin",
     landmarks: [
       "Located on the Alwar-Bhiwadi Highway",
       "Near Euro International School",

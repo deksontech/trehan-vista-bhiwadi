@@ -453,21 +453,15 @@ function LocationSection({ openLead }: { openLead: LandingCta }) {
             </PremiumButton>
           </div>
         </div>
-        <div className="relative min-h-[360px] overflow-hidden rounded-lg border border-[#DED7CB] bg-[#F7F3EA]">
-          <img
-            src="/images/trehan-vista/location.webp"
-            alt="Trehan Vista location and site layout"
-            className="absolute inset-0 h-full w-full object-cover opacity-85"
+        <div className="relative min-h-[360px] overflow-hidden rounded-lg border border-[#DED7CB] bg-[#F7F3EA] shadow-xl">
+          <iframe
+            src={project.location.googleMapsEmbedUrl}
+            title="Google Map showing Trehan Vista in Sector 54, Bhiwadi"
+            className="absolute inset-0 h-full w-full"
+            loading="lazy"
+            allowFullScreen
+            referrerPolicy="strict-origin-when-cross-origin"
           />
-          <div className="absolute inset-0 grid place-items-center bg-[#161512]/20 p-6 text-center">
-            <div className="rounded-lg bg-[#FFFDF8]/95 p-6 shadow-xl">
-              <MapPin className="mx-auto mb-3 text-[#B18A4A]" />
-              <p className="font-serif text-2xl">Google Maps Embed Placeholder</p>
-              <p className="mt-2 text-sm text-[#6D6962]">
-                Add the verified embed URL when available.
-              </p>
-            </div>
-          </div>
         </div>
       </Container>
     </section>
