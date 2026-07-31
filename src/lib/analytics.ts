@@ -23,6 +23,7 @@ declare global {
 }
 
 export const GOOGLE_ADS_LEAD_CONVERSION_ID = "AW-16950600138/azy9CLrLuMgaEMrD1pI_";
+export const GOOGLE_ADS_CONFIG_ID = "AW-16950600138";
 
 export function trackEvent(
   event: AnalyticsEvent,

@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import Script from "next/script";
 import { Cormorant_Garamond, Manrope } from "next/font/google";
 import { project } from "@/data/project";
-import { GOOGLE_ADS_LEAD_CONVERSION_ID } from "@/lib/analytics";
+import { GOOGLE_ADS_CONFIG_ID, GOOGLE_ADS_LEAD_CONVERSION_ID } from "@/lib/analytics";
 import "./globals.css";
 
 const heading = Cormorant_Garamond({
@@ -18,7 +18,7 @@ const body = Manrope({
   display: "swap",
 });
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://trehanvistagroup.com";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://trehanvistabhiwadi.com";
 const gaId = process.env.NEXT_PUBLIC_GA_ID || "G-XWSRNWQE4J";
 const title = `${project.name} Bhiwadi | 2 & 3 BHK Flats from ${project.pricing.displayStartingPrice}`;
 const description = `Explore 2, 3 and 4 BHK apartments at ${project.name} in Sector 54, Bhiwadi. 2 BHK homes start from ${project.configurations[0].displayPriceLower} and 3 BHK homes from ${project.configurations[1].displayPriceLower}. Request prices, floor plans and a site visit.`;
@@ -89,6 +89,7 @@ export default function RootLayout({
             function gtag(){dataLayer.push(arguments);}
             gtag('js', new Date());
             gtag('config', '${gaId}');
+            gtag('config', '${GOOGLE_ADS_CONFIG_ID}');
             function gtag_report_conversion(url) {
               var callback = function () {
                 if (typeof(url) != 'undefined') {
