@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import Script from "next/script";
 import { Cormorant_Garamond, Manrope } from "next/font/google";
 import { project } from "@/data/project";
 import "./globals.css";
@@ -17,6 +18,7 @@ const body = Manrope({
 });
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://trehanvistagroup.com";
+const gaId = process.env.NEXT_PUBLIC_GA_ID || "G-XWSRNWQE4J";
 const title = `${project.name} Bhiwadi | 2 & 3 BHK Flats from ${project.pricing.displayStartingPrice}`;
 const description = `Explore 2, 3 and 4 BHK apartments at ${project.name} in Sector 54, Bhiwadi. 2 BHK homes start from ${project.configurations[0].displayPriceLower} and 3 BHK homes from ${project.configurations[1].displayPriceLower}. Request prices, floor plans and a site visit.`;
 
@@ -78,7 +80,18 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${heading.variable} ${body.variable}`}>{children}</body>
+      <body className={`${heading.variable} ${body.variable}`}>
+        <Script src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`} strategy="afterInteractive" />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', '${gaId}');
+          `}
+        </Script>
+        {children}
+      </body>
     </html>
   );
 }
