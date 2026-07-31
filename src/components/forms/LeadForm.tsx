@@ -50,6 +50,7 @@ export function LeadForm({
   const [success, setSuccess] = useState(false);
   const [serverError, setServerError] = useState("");
   const started = useRef(false);
+  const leadSequence = useRef(0);
 
   const defaults = useMemo(
     () => ({
@@ -131,7 +132,11 @@ export function LeadForm({
   async function onSubmit(values: LeadFormValues) {
     setServerError("");
     const submittedAt = new Date().toISOString();
-    const leadId = crypto.randomUUID();
+    leadSequence.current += 1;
+    const leadId =
+      typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+        ? crypto.randomUUID()
+        : `${submittedAt}-${leadSequence.current}`;
 
     const payload = {
       ...values,
@@ -142,19 +147,30 @@ export function LeadForm({
       leadId,
     };
 
-    const response = await fetch(WEB3FORMS_ENDPOINT, {
-      method: "POST",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(buildWeb3FormsPayload(payload)),
-    });
+    let response: Response;
+    let result: { success?: boolean; message?: string };
 
-    const result = (await response.json().catch(() => ({}))) as {
-      success?: boolean;
-      message?: string;
-    };
+    try {
+      response = await fetch(WEB3FORMS_ENDPOINT, {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(buildWeb3FormsPayload(payload)),
+      });
+
+      result = (await response.json().catch(() => ({}))) as {
+        success?: boolean;
+        message?: string;
+      };
+    } catch (error) {
+      console.error("Web3Forms browser submission failed", error);
+      setServerError(
+        "Your details could not be sent right now. Please call or WhatsApp the sales team.",
+      );
+      return;
+    }
 
     if (!response.ok || !result.success) {
       setServerError(
@@ -192,6 +208,7 @@ export function LeadForm({
   }
 
   return (
+    // eslint-disable-next-line react-hooks/refs -- React Hook Form's handleSubmit is stable for submit binding.
     <form className="space-y-4" onSubmit={handleSubmit(onSubmit)} onFocus={markStarted}>
       <input
         {...register("company")}
