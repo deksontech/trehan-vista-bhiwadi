@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { CalendarDays, Loader2 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
-import { eventForEnquiry, trackEvent } from "@/lib/analytics";
+import { eventForEnquiry, reportLeadConversion, trackEvent } from "@/lib/analytics";
 import { collectLeadSource } from "@/lib/lead-source";
 import {
   apartmentPreferences,
@@ -161,7 +161,7 @@ export function LeadForm({
       cta_clicked: ctaClicked,
     });
     reset(defaults);
-    window.location.assign(THANK_YOU_PATH);
+    reportLeadConversion(THANK_YOU_PATH);
   }
 
   async function onSubmit(values: LeadFormValues) {

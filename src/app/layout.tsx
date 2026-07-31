@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import Script from "next/script";
 import { Cormorant_Garamond, Manrope } from "next/font/google";
 import { project } from "@/data/project";
+import { GOOGLE_ADS_LEAD_CONVERSION_ID } from "@/lib/analytics";
 import "./globals.css";
 
 const heading = Cormorant_Garamond({
@@ -88,6 +89,19 @@ export default function RootLayout({
             function gtag(){dataLayer.push(arguments);}
             gtag('js', new Date());
             gtag('config', '${gaId}');
+            function gtag_report_conversion(url) {
+              var callback = function () {
+                if (typeof(url) != 'undefined') {
+                  window.location = url;
+                }
+              };
+              gtag('event', 'conversion', {
+                'send_to': '${GOOGLE_ADS_LEAD_CONVERSION_ID}',
+                'event_callback': callback
+              });
+              return false;
+            }
+            window.gtag_report_conversion = gtag_report_conversion;
           `}
         </Script>
         {children}

@@ -17,9 +17,12 @@ declare global {
   interface Window {
     dataLayer?: Record<string, unknown>[];
     gtag?: (...args: unknown[]) => void;
+    gtag_report_conversion?: (url?: string) => boolean;
     fbq?: (...args: unknown[]) => void;
   }
 }
+
+export const GOOGLE_ADS_LEAD_CONVERSION_ID = "AW-16950600138/azy9CLrLuMgaEMrD1pI_";
 
 export function trackEvent(
   event: AnalyticsEvent,
@@ -32,6 +35,35 @@ export function trackEvent(
   window.dataLayer?.push({ event, ...params });
   window.gtag?.("event", event, params);
   window.fbq?.("trackCustom", event, params);
+}
+
+export function reportLeadConversion(url: string) {
+  if (typeof window === "undefined") {
+    return false;
+  }
+
+  if (typeof window.gtag_report_conversion === "function") {
+    return window.gtag_report_conversion(url);
+  }
+
+  if (typeof window.gtag !== "function") {
+    window.location.assign(url);
+    return false;
+  }
+
+  let redirected = false;
+  const redirect = () => {
+    if (redirected) return;
+    redirected = true;
+    window.location.assign(url);
+  };
+
+  window.gtag("event", "conversion", {
+    send_to: GOOGLE_ADS_LEAD_CONVERSION_ID,
+    event_callback: redirect,
+  });
+  window.setTimeout(redirect, 900);
+  return false;
 }
 
 export function eventForEnquiry(enquiryType: string): AnalyticsEvent {
