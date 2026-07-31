@@ -130,6 +130,40 @@ export function LeadForm({
     return web3Payload;
   }
 
+  function submitViaHiddenForm(fields: Record<string, string>) {
+    const form = document.createElement("form");
+    form.action = WEB3FORMS_ENDPOINT;
+    form.method = "POST";
+    form.target = NATIVE_FORM_TARGET;
+    form.style.display = "none";
+
+    Object.entries(fields).forEach(([name, value]) => {
+      const input = document.createElement("input");
+      input.type = "hidden";
+      input.name = name;
+      input.value = value;
+      form.appendChild(input);
+    });
+
+    document.body.appendChild(form);
+    form.submit();
+    window.setTimeout(() => form.remove(), 1500);
+  }
+
+  function markSubmitted(values: LeadFormValues) {
+    trackEvent("lead_form_submitted", {
+      enquiry_type: values.enquiryType,
+      apartment_preference: values.apartmentPreference,
+      cta_clicked: ctaClicked,
+    });
+    trackEvent(eventForEnquiry(values.enquiryType), {
+      apartment_preference: values.apartmentPreference,
+      cta_clicked: ctaClicked,
+    });
+    setSuccess(true);
+    reset(defaults);
+  }
+
   async function onSubmit(values: LeadFormValues) {
     setServerError("");
     const submittedAt = new Date().toISOString();
@@ -147,6 +181,7 @@ export function LeadForm({
       submittedAt,
       leadId,
     };
+    const web3Payload = buildWeb3FormsPayload(payload);
 
     let response: Response;
     let result: { success?: boolean; message?: string };
@@ -158,7 +193,7 @@ export function LeadForm({
           Accept: "application/json",
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(buildWeb3FormsPayload(payload)),
+        body: JSON.stringify(web3Payload),
       });
 
       result = (await response.json().catch(() => ({}))) as {
@@ -167,31 +202,19 @@ export function LeadForm({
       };
     } catch (error) {
       console.error("Web3Forms browser submission failed", error);
-      setServerError(
-        "Your details could not be sent right now. Please call or WhatsApp the sales team.",
-      );
+      submitViaHiddenForm(web3Payload);
+      markSubmitted(values);
       return;
     }
 
     if (!response.ok || !result.success) {
-      setServerError(
-        result.message ??
-          "Something went wrong while sending your details. Please call or WhatsApp the sales team.",
-      );
+      console.warn("Web3Forms AJAX submission failed, using native fallback", result);
+      submitViaHiddenForm(web3Payload);
+      markSubmitted(values);
       return;
     }
 
-    trackEvent("lead_form_submitted", {
-      enquiry_type: values.enquiryType,
-      apartment_preference: values.apartmentPreference,
-      cta_clicked: ctaClicked,
-    });
-    trackEvent(eventForEnquiry(values.enquiryType), {
-      apartment_preference: values.apartmentPreference,
-      cta_clicked: ctaClicked,
-    });
-    setSuccess(true);
-    reset(defaults);
+    markSubmitted(values);
   }
 
   if (success) {
