@@ -17,6 +17,7 @@ import { cn } from "@/lib/utils";
 
 const WEB3FORMS_ENDPOINT = "https://api.web3forms.com/submit";
 const WEB3FORMS_ACCESS_KEY = "25c24e80-ef96-42c2-a5b2-b47bc86ce783";
+const NATIVE_FORM_TARGET = "trehan-vista-lead-fallback";
 
 type LeadSubmissionPayload = LeadFormValues & {
   enquirySource: string;
@@ -208,8 +209,19 @@ export function LeadForm({
   }
 
   return (
-    // eslint-disable-next-line react-hooks/refs -- React Hook Form's handleSubmit is stable for submit binding.
-    <form className="space-y-4" onSubmit={handleSubmit(onSubmit)} onFocus={markStarted}>
+    <form
+      action={WEB3FORMS_ENDPOINT}
+      className="space-y-4"
+      method="post"
+      target={NATIVE_FORM_TARGET}
+      // eslint-disable-next-line react-hooks/refs -- React Hook Form's handleSubmit is stable for submit binding.
+      onSubmit={handleSubmit(onSubmit)}
+      onFocus={markStarted}
+    >
+      <iframe className="hidden" name={NATIVE_FORM_TARGET} title="Lead form fallback" />
+      <input type="hidden" name="access_key" value={WEB3FORMS_ACCESS_KEY} />
+      <input type="hidden" name="subject" value="New Trehan Vista Lead" />
+      <input type="hidden" name="from_name" value="Trehan Vista Landing Page" />
       <input
         {...register("company")}
         className="hidden"
