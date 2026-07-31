@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { CalendarDays, CheckCircle2, Loader2 } from "lucide-react";
+import { CalendarDays, Loader2 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { eventForEnquiry, trackEvent } from "@/lib/analytics";
@@ -18,6 +18,7 @@ import { cn } from "@/lib/utils";
 const WEB3FORMS_ENDPOINT = "https://api.web3forms.com/submit";
 const WEB3FORMS_ACCESS_KEY = "25c24e80-ef96-42c2-a5b2-b47bc86ce783";
 const NATIVE_FORM_TARGET = "trehan-vista-lead-fallback";
+const THANK_YOU_PATH = "/thank-you";
 
 type LeadSubmissionPayload = LeadFormValues & {
   enquirySource: string;
@@ -48,7 +49,6 @@ export function LeadForm({
   ctaClicked = "Lead Form",
   source = "Landing Page",
 }: LeadFormProps) {
-  const [success, setSuccess] = useState(false);
   const [serverError, setServerError] = useState("");
   const started = useRef(false);
   const leadSequence = useRef(0);
@@ -160,8 +160,8 @@ export function LeadForm({
       apartment_preference: values.apartmentPreference,
       cta_clicked: ctaClicked,
     });
-    setSuccess(true);
     reset(defaults);
+    window.location.assign(THANK_YOU_PATH);
   }
 
   async function onSubmit(values: LeadFormValues) {
@@ -217,20 +217,6 @@ export function LeadForm({
     markSubmitted(values);
   }
 
-  if (success) {
-    return (
-      <div
-        className="rounded-lg border border-[#D7C29A] bg-[#F7F3EA] p-5 text-[#161512]"
-        role="status"
-      >
-        <CheckCircle2 className="mb-3 text-[#35684C]" size={28} />
-        <p className="font-semibold">
-          Thank you for your interest in Trehan Vista. The project team will contact you shortly.
-        </p>
-      </div>
-    );
-  }
-
   return (
     <form
       action={WEB3FORMS_ENDPOINT}
@@ -245,6 +231,7 @@ export function LeadForm({
       <input type="hidden" name="access_key" value={WEB3FORMS_ACCESS_KEY} />
       <input type="hidden" name="subject" value="New Trehan Vista Lead" />
       <input type="hidden" name="from_name" value="Trehan Vista Landing Page" />
+      <input type="hidden" name="redirect" value={THANK_YOU_PATH} />
       <input
         {...register("company")}
         className="hidden"
